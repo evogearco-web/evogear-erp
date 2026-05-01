@@ -1,8 +1,19 @@
+import { parseCustomerPayload } from '@/lib/customer-payload';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const data = await req.json();
+  const raw = await req.json();
+  const parsed = parseCustomerPayload(raw);
+  if (parsed.error) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+  const data = parsed.data!;
+  const duplicatePhone = await prisma.customer.findFirst({ where: { phone: data.phone, NOT: { id: params.id } } });
+  if (duplicatePhone) return NextResponse.json({ error: 'Phone number already exists.' }, { status: 400 });
+
+  const duplicateEmail = await prisma.customer.findFirst({ where: { email: data.email, NOT: { id: params.id } } });
+  if (duplicateEmail) return NextResponse.json({ error: 'Email already exists.' }, { status: 400 });
+
   const customer = await prisma.customer.update({ where: { id: params.id }, data });
   await prisma.customerActivity.create({ data: { customerId: params.id, type: 'CUSTOMER_EDITED', description: 'Customer updated' } });
   return NextResponse.json(customer);
