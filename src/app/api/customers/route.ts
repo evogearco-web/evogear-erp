@@ -5,17 +5,16 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   const raw = await req.json();
   const parsed = parseCustomerPayload(raw);
-  if (parsed.error) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  if (parsed.errors) return NextResponse.json({ message: 'Please fill in the required fields highlighted below.', fieldErrors: parsed.errors }, { status: 400 });
 
   const data = parsed.data!;
   const duplicatePhone = await prisma.customer.findUnique({ where: { phone: data.phone } });
-  if (duplicatePhone) return NextResponse.json({ error: 'Phone number already exists.' }, { status: 400 });
+  if (duplicatePhone) return NextResponse.json({ message: 'Validation failed.', fieldErrors: { phone: 'A customer with this phone number already exists.' } }, { status: 400 });
 
   const duplicateEmail = await prisma.customer.findUnique({ where: { email: data.email } });
-  if (duplicateEmail) return NextResponse.json({ error: 'Email already exists.' }, { status: 400 });
+  if (duplicateEmail) return NextResponse.json({ message: 'Validation failed.', fieldErrors: { email: 'A customer with this email already exists.' } }, { status: 400 });
 
   const duplicateOrg = data.companyName ? await prisma.customer.findFirst({ where: { companyName: data.companyName } }) : null;
-
   const customer = await prisma.customer.create({ data });
   await prisma.customerActivity.create({ data: { customerId: customer.id, type: 'CUSTOMER_CREATED', description: 'Customer created' } });
 

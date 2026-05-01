@@ -5,14 +5,14 @@ import { NextResponse } from 'next/server';
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const raw = await req.json();
   const parsed = parseCustomerPayload(raw);
-  if (parsed.error) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  if (parsed.errors) return NextResponse.json({ message: 'Please fill in the required fields highlighted below.', fieldErrors: parsed.errors }, { status: 400 });
 
   const data = parsed.data!;
   const duplicatePhone = await prisma.customer.findFirst({ where: { phone: data.phone, NOT: { id: params.id } } });
-  if (duplicatePhone) return NextResponse.json({ error: 'Phone number already exists.' }, { status: 400 });
+  if (duplicatePhone) return NextResponse.json({ message: 'Validation failed.', fieldErrors: { phone: 'A customer with this phone number already exists.' } }, { status: 400 });
 
   const duplicateEmail = await prisma.customer.findFirst({ where: { email: data.email, NOT: { id: params.id } } });
-  if (duplicateEmail) return NextResponse.json({ error: 'Email already exists.' }, { status: 400 });
+  if (duplicateEmail) return NextResponse.json({ message: 'Validation failed.', fieldErrors: { email: 'A customer with this email already exists.' } }, { status: 400 });
 
   const customer = await prisma.customer.update({ where: { id: params.id }, data });
   await prisma.customerActivity.create({ data: { customerId: params.id, type: 'CUSTOMER_EDITED', description: 'Customer updated' } });

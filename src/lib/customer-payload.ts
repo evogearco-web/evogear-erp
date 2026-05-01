@@ -1,16 +1,21 @@
 import type { Prisma } from '@prisma/client';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export type CustomerFieldErrors = Record<string, string>;
 
-export function parseCustomerPayload(raw: any): { data?: Prisma.CustomerUncheckedCreateInput; error?: string } {
-  if (!raw.phone?.trim()) return { error: 'Phone number is required.' };
-  if (!raw.email?.trim()) return { error: 'Email is required.' };
-  if (!emailRegex.test(raw.email)) return { error: 'Please enter a valid email address.' };
-  if (!raw.contactName?.trim()) return { error: 'Contact person is required.' };
-  if (!raw.customerType) return { error: 'Customer type is required.' };
-  if (!raw.deliveryAddressLine1?.trim() || !raw.deliveryPostalCode?.trim() || !raw.deliveryCountry?.trim()) {
-    return { error: 'Delivery address line 1, postal code, and country are required.' };
-  }
+export function parseCustomerPayload(raw: any): { data?: Prisma.CustomerUncheckedCreateInput; errors?: CustomerFieldErrors } {
+  const errors: CustomerFieldErrors = {};
+
+  if (!raw.contactName?.trim()) errors.contactName = 'Contact person is required.';
+  if (!raw.phone?.trim()) errors.phone = 'Phone number is required.';
+  if (!raw.email?.trim()) errors.email = 'Email is required.';
+  else if (!emailRegex.test(raw.email)) errors.email = 'Enter a valid email address.';
+  if (!raw.customerType) errors.customerType = 'Customer type is required.';
+  if (!raw.deliveryAddressLine1?.trim()) errors.deliveryAddressLine1 = 'Delivery address line 1 is required.';
+  if (!raw.deliveryPostalCode?.trim()) errors.deliveryPostalCode = 'Delivery postal code is required.';
+  if (!raw.deliveryCountry?.trim()) errors.deliveryCountry = 'Delivery country is required.';
+
+  if (Object.keys(errors).length > 0) return { errors };
 
   const billingSame = Boolean(raw.billingSame);
   const data: Prisma.CustomerUncheckedCreateInput = {
@@ -19,7 +24,7 @@ export function parseCustomerPayload(raw: any): { data?: Prisma.CustomerUnchecke
     email: raw.email,
     phone: raw.phone,
     customerType: raw.customerType,
-    status: raw.status ?? 'LEAD',
+    status: raw.status || 'LEAD',
     tags: Array.isArray(raw.tags) ? raw.tags : [],
     deliveryAddressLine1: raw.deliveryAddressLine1,
     deliveryAddressLine2: raw.deliveryAddressLine2 || null,
