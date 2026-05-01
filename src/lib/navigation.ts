@@ -1,12 +1,13 @@
 export const navigationItems = [
-  { label: 'Dashboard', href: '/' },
-  { label: 'Customers', href: '/customers' },
-  { label: 'Products', href: '/products' },
-  { label: 'Quotations', href: '/quotations' },
-  { label: 'Sales Orders', href: '/sales-orders' },
-  { label: 'Suppliers', href: '/suppliers' },
-  { label: 'Supplier Orders', href: '/supplier-orders' },
-  { label: 'Shipping', href: '/shipping' },
-  { label: 'Payments', href: '/payments' },
-  { label: 'Settings', href: '/settings' }
+  { label: 'Dashboard', href: '/', icon: '◼' },
+  { label: 'Customers', href: '/customers', icon: '◻' },
+  { label: 'Products', href: '/products', icon: '◻' },
+  { label: 'Suppliers', href: '/suppliers', icon: '◻' },
+  { label: 'Quotations', href: '/quotations', icon: '◻' },
+  { label: 'Customer Orders', href: '/customer-orders', icon: '◻' },
+  { label: 'Supplier Orders', href: '/supplier-orders', icon: '◻' },
+  { label: 'Shipping', href: '/shipping', icon: '◻' },
+  { label: 'Invoices', href: '/invoices', icon: '◻' },
+  { label: 'Reports', href: '/reports', icon: '◻' },
+  { label: 'Settings', href: '/settings', icon: '◻' }
 ] as const;

@@ -1,19 +1,7 @@
-import { DataTablePlaceholder } from '@/components/ui/DataTablePlaceholder';
-import { PageHeader } from '@/components/ui/PageHeader';
+import { ModulePage } from '@/components/ui/ModulePage';
 import { moduleCopy } from '@/lib/module-content';
 
 export default function SupplierOrdersPage() {
-  const moduleTitle = 'Supplier Orders';
-
-  return (
-    <section className="space-y-6">
-      <PageHeader title={moduleTitle} description={moduleCopy[moduleTitle]} />
-      <DataTablePlaceholder
-        title={
-          moduleTitle + ' foundation'
-        }
-        message="This module is scaffolded for Prisma-backed listing, filters, and future actions."
-      />
-    </section>
-  );
+  const title = 'Supplier Orders';
+  return <ModulePage title={title} description={moduleCopy[title]} />;
 }
