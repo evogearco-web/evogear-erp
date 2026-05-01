@@ -14,54 +14,6 @@ enum UserRole {
   VIEWER
 }
 
-enum QuotationStatus {
-  DRAFT
-  SENT
-  ACCEPTED
-  REJECTED
-  EXPIRED
-}
-
-enum SalesOrderStatus {
-  PENDING
-  CONFIRMED
-  IN_PRODUCTION
-  SHIPPED
-  COMPLETED
-  CANCELLED
-}
-
-enum SupplierOrderStatus {
-  DRAFT
-  ORDERED
-  PAID
-  IN_PRODUCTION
-  SHIPPED
-  RECEIVED
-  CANCELLED
-}
-
-enum ShipmentStatus {
-  PENDING
-  IN_TRANSIT
-  DELIVERED
-  DELAYED
-}
-
-enum PaymentStatus {
-  UNPAID
-  PARTIALLY_PAID
-  PAID
-  OVERDUE
-}
-
-enum PaymentType {
-  DEPOSIT
-  BALANCE
-  FULL_PAYMENT
-  REFUND
-}
-
 enum Currency {
   SGD
   RMB
@@ -111,6 +63,54 @@ enum FollowUpStatus {
   CANCELLED
 }
 
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum SalesOrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PRODUCTION
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum SupplierOrderStatus {
+  DRAFT
+  ORDERED
+  PAID
+  IN_PRODUCTION
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
+
+enum ShipmentStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  DELAYED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  FULL_PAYMENT
+  REFUND
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -121,34 +121,41 @@ model User {
 }
 
 model Customer {
-  id                   String             @id @default(cuid())
-  contactName          String
-  companyName          String?
-  email                String
-  phone                String             @unique
-  customerType         CustomerType
-  status               CustomerStatus     @default(LEAD)
-  tags                 CustomerTag[]
-  deliveryAddressLine1 String
-  deliveryAddressLine2 String?
-  deliveryPostalCode   String
-  deliveryCountry      String
-  billingAddressLine1  String?
-  billingAddressLine2  String?
-  billingPostalCode    String?
-  billingCountry       String?
-  notes                String?
-  quotations           Quotation[]
-  salesOrders          SalesOrder[]
-  customerNotes        CustomerNote[]
-  attachments          CustomerAttachment[]
-  followUps            CustomerFollowUp[]
-  activities           CustomerActivity[]
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  id                    String         @id @default(cuid())
+  contactName           String
+  companyName           String?
+  email                 String         @unique
+  phone                 String         @unique
+  customerType          CustomerType
+  status                CustomerStatus @default(LEAD)
+  tags                  CustomerTag[]   @default([])
+
+  deliveryAddressLine1  String
+  deliveryAddressLine2  String?
+  deliveryPostalCode    String
+  deliveryCountry       String         @default("Singapore")
+
+  billingAddressLine1   String?
+  billingAddressLine2   String?
+  billingPostalCode     String?
+  billingCountry        String?
+
+  notes                 String?
+
+  quotations            Quotation[]
+  salesOrders           SalesOrder[]
+  customerNotes         CustomerNote[]
+  attachments           CustomerAttachment[]
+  followUps             CustomerFollowUp[]
+  activities            CustomerActivity[]
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 
   @@index([contactName])
   @@index([companyName])
+  @@index([phone])
+  @@index([customerType])
 }
 
 model CustomerNote {
@@ -158,6 +165,8 @@ model CustomerNote {
   content    String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
 }
 
 model CustomerAttachment {
@@ -171,6 +180,8 @@ model CustomerAttachment {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([customerId])
 }
 
 model CustomerFollowUp {
@@ -184,6 +195,10 @@ model CustomerFollowUp {
   dueDate     DateTime
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([dueDate])
 }
 
 model CustomerActivity {
@@ -193,6 +208,8 @@ model CustomerActivity {
   type        String
   description String
   createdAt   DateTime @default(now())
+
+  @@index([customerId])
 }
 
 model Supplier {
@@ -215,7 +232,7 @@ model Product {
   id                 String              @id @default(cuid())
   name               String
   category           String
-  description        String
+  description        String?
   supplierId         String
   supplier           Supplier            @relation(fields: [supplierId], references: [id])
   costCurrency       Currency
@@ -229,6 +246,8 @@ model Product {
   supplierOrderItems SupplierOrderItem[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+
+  @@index([supplierId])
 }
 
 model Quotation {
@@ -250,12 +269,15 @@ model Quotation {
   salesOrder        SalesOrder?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+
+  @@index([customerId])
+  @@index([status])
 }
 
 model QuotationItem {
   id               String    @id @default(cuid())
   quotationId      String
-  quotation        Quotation @relation(fields: [quotationId], references: [id])
+  quotation        Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   productId        String
   product          Product   @relation(fields: [productId], references: [id])
   description      String
@@ -266,30 +288,36 @@ model QuotationItem {
   lineSellingPrice Decimal   @db.Decimal(12, 2)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+
+  @@index([quotationId])
+  @@index([productId])
 }
 
 model SalesOrder {
-  id                   String           @id @default(cuid())
-  salesOrderNumber     String           @unique
-  quotationId          String?          @unique
-  quotation            Quotation?       @relation(fields: [quotationId], references: [id])
+  id                   String             @id @default(cuid())
+  salesOrderNumber     String             @unique
+  quotationId          String?            @unique
+  quotation            Quotation?         @relation(fields: [quotationId], references: [id])
   customerId           String
-  customer             Customer         @relation(fields: [customerId], references: [id])
-  status               SalesOrderStatus @default(PENDING)
+  customer             Customer           @relation(fields: [customerId], references: [id])
+  status               SalesOrderStatus   @default(PENDING)
   orderDate            DateTime
   expectedDeliveryDate DateTime?
-  totalSellingPrice    Decimal          @db.Decimal(12, 2)
+  totalSellingPrice    Decimal            @db.Decimal(12, 2)
   items                SalesOrderItem[]
   supplierOrders       SupplierOrder[]
   payments             Payment[]
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([customerId])
+  @@index([status])
 }
 
 model SalesOrderItem {
   id               String     @id @default(cuid())
   salesOrderId     String
-  salesOrder       SalesOrder @relation(fields: [salesOrderId], references: [id])
+  salesOrder       SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
   productId        String
   product          Product    @relation(fields: [productId], references: [id])
   description      String
@@ -298,6 +326,9 @@ model SalesOrderItem {
   lineSellingPrice Decimal    @db.Decimal(12, 2)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+
+  @@index([salesOrderId])
+  @@index([productId])
 }
 
 model SupplierOrder {
@@ -318,12 +349,16 @@ model SupplierOrder {
   shipment                Shipment?
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
+
+  @@index([supplierId])
+  @@index([salesOrderId])
+  @@index([status])
 }
 
 model SupplierOrderItem {
   id                      String        @id @default(cuid())
   supplierOrderId         String
-  supplierOrder           SupplierOrder @relation(fields: [supplierOrderId], references: [id])
+  supplierOrder           SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
   productId               String
   product                 Product       @relation(fields: [productId], references: [id])
   description             String
@@ -332,12 +367,15 @@ model SupplierOrderItem {
   lineCostForeignCurrency Decimal       @db.Decimal(12, 2)
   createdAt               DateTime      @default(now())
   updatedAt               DateTime      @updatedAt
+
+  @@index([supplierOrderId])
+  @@index([productId])
 }
 
 model Shipment {
   id              String         @id @default(cuid())
   supplierOrderId String         @unique
-  supplierOrder   SupplierOrder  @relation(fields: [supplierOrderId], references: [id])
+  supplierOrder   SupplierOrder  @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
   shippingMethod  String
   trackingNumber  String?
   weightKg        Decimal        @db.Decimal(8, 2)
@@ -349,15 +387,18 @@ model Shipment {
 }
 
 model Payment {
-  id          String        @id @default(cuid())
+  id           String        @id @default(cuid())
   salesOrderId String
-  salesOrder  SalesOrder    @relation(fields: [salesOrderId], references: [id])
-  amount      Decimal       @db.Decimal(12, 2)
-  currency    Currency
-  paymentType PaymentType
-  status      PaymentStatus @default(UNPAID)
-  dueDate     DateTime
-  paidDate    DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  salesOrder   SalesOrder    @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  amount       Decimal       @db.Decimal(12, 2)
+  currency     Currency
+  paymentType  PaymentType
+  status       PaymentStatus @default(UNPAID)
+  dueDate      DateTime
+  paidDate     DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([salesOrderId])
+  @@index([status])
 }
