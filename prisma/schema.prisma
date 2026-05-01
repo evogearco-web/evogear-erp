@@ -7,92 +7,398 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole { ADMIN MANAGER STAFF VIEWER }
-enum Currency { SGD RMB USD }
-enum CustomerType { SCHOOL B2C_CUSTOMER CORPORATE STUDENT_GROUP OTHER }
-enum CustomerStatus { ACTIVE INACTIVE LEAD PROSPECT REPEAT_CUSTOMER BLACKLISTED }
-enum CustomerTag { HIGH_VALUE FAST_PAYER SLOW_PAYER PRICE_SENSITIVE REQUIRES_FOLLOW_UP FREQUENT_BUYER STUDENT_GROUP CORPORATE }
-enum FollowUpType { FOLLOW_UP_ON_QUOTATION ASK_FOR_ARTWORK CONFIRM_SIZE_BREAKDOWN REQUEST_DEPOSIT CHASE_BALANCE_PAYMENT OTHER }
-enum FollowUpStatus { OPEN DONE CANCELLED }
-enum QuotationStatus { DRAFT SENT ACCEPTED REJECTED EXPIRED }
-enum SalesOrderStatus { PENDING CONFIRMED IN_PRODUCTION SHIPPED COMPLETED CANCELLED }
-enum SupplierOrderStatus { DRAFT ORDERED PAID IN_PRODUCTION SHIPPED RECEIVED CANCELLED }
-enum ShipmentStatus { PENDING IN_TRANSIT DELIVERED DELAYED }
-enum PaymentStatus { UNPAID PARTIALLY_PAID PAID OVERDUE }
-enum PaymentType { DEPOSIT BALANCE FULL_PAYMENT REFUND }
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+  VIEWER
+}
 
-enum ProductType { DRY_FIT_SHIRT COTTON_T_SHIRT POLO_SHIRT HOODIE WINDBREAKER LANYARD MOUSEPAD RGB_MOUSEPAD MICROFIBER_TOWEL TOTE_BAG RECYCLE_BAG SHOE_BAG NAME_TENT STICKER CUSTOM_SOCKS OTHER }
-enum ProductCategory { APPAREL MOUSEPADS BAGS TOWELS STATIONERY ACCESSORIES EVENT_MERCHANDISE OTHERS }
-enum ProductStatus { ACTIVE INACTIVE DRAFT ARCHIVED SUPPLIER_UNAVAILABLE PRICE_NEEDS_UPDATE }
-enum ProductAttachmentType { SUPPLIER_PRODUCT_IMAGE ACTUAL_SAMPLE_PHOTO SIZE_CHART_IMAGE CUSTOMER_MOCKUP_EXAMPLE PRINT_REFERENCE_IMAGE SIZE_CHART_PDF SUPPLIER_QUOTATION_SCREENSHOT ARTWORK_TEMPLATE MOCKUP_TEMPLATE TAOBAO_PRODUCT_SCREENSHOT OTHER }
+enum Currency {
+  SGD
+  RMB
+  USD
+}
 
-model User { id String @id @default(cuid()) name String email String @unique role UserRole @default(STAFF) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model Customer { id String @id @default(cuid()) contactName String companyName String? email String @unique phone String @unique customerType CustomerType status CustomerStatus @default(LEAD) tags CustomerTag[] @default([]) deliveryAddressLine1 String deliveryAddressLine2 String? deliveryPostalCode String deliveryCountry String @default("Singapore") billingAddressLine1 String? billingAddressLine2 String? billingPostalCode String? billingCountry String? notes String? quotations Quotation[] salesOrders SalesOrder[] customerNotes CustomerNote[] attachments CustomerAttachment[] followUps CustomerFollowUp[] activities CustomerActivity[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([contactName]) @@index([companyName]) @@index([phone]) @@index([customerType]) }
-model CustomerNote { id String @id @default(cuid()) customerId String customer Customer @relation(fields:[customerId], references:[id], onDelete:Cascade) content String createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([customerId]) }
-model CustomerAttachment { id String @id @default(cuid()) customerId String customer Customer @relation(fields:[customerId], references:[id], onDelete:Cascade) fileName String fileUrl String mimeType String sizeBytes Int description String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([customerId]) }
-model CustomerFollowUp { id String @id @default(cuid()) customerId String customer Customer @relation(fields:[customerId], references:[id], onDelete:Cascade) title String description String? type FollowUpType status FollowUpStatus @default(OPEN) dueDate DateTime createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([customerId]) @@index([status]) @@index([dueDate]) }
-model CustomerActivity { id String @id @default(cuid()) customerId String customer Customer @relation(fields:[customerId], references:[id], onDelete:Cascade) type String description String createdAt DateTime @default(now()) @@index([customerId]) }
-model Supplier { id String @id @default(cuid()) name String contactName String email String phone String country String currency Currency address String notes String? products Product[] supplierOrders SupplierOrder[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
+enum CustomerType {
+  SCHOOL
+  B2C_CUSTOMER
+  CORPORATE
+  STUDENT_GROUP
+  OTHER
+}
 
-model Product {
-  id String @id @default(cuid())
-  productName String
-  productType ProductType
-  category ProductCategory
-  supplierId String?
-  supplier Supplier? @relation(fields:[supplierId], references:[id])
-  supplierName String
-  supplierContactName String?
-  supplierPhone String
-  supplierEmail String?
-  supplierCountry String?
-  supplierNotes String?
-  supplierProductLink String?
-  taobaoLink String?
-  material String?
-  gsm String?
-  sizeChart String?
-  colourOptions String?
-  printMethod String?
-  packagingNotes String?
-  productionLeadTime String?
-  shippingNotes String?
-  internalNotes String?
-  customerFacingDescription String?
-  description String
-  status ProductStatus @default(DRAFT)
-  costCurrency Currency
-  unitCostRmb Decimal @db.Decimal(12,2)
-  exchangeRate Decimal @default(5) @db.Decimal(12,4)
-  unitCostSgd Decimal @db.Decimal(12,2)
-  sellingPriceSgd Decimal @db.Decimal(12,2)
-  grossProfitPerUnit Decimal @db.Decimal(12,2)
-  grossMarginPercentage Decimal @db.Decimal(7,2)
-  moq Int
-  unit String
-  weightKg Decimal? @db.Decimal(8,2)
-  customFields Json?
-  quotationItems QuotationItem[]
-  salesOrderItems SalesOrderItem[]
-  supplierOrderItems SupplierOrderItem[]
-  priceTiers ProductPriceTier[]
-  sizeVariants ProductSizeVariant[]
-  attachments ProductAttachment[]
-  activities ProductActivity[]
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  LEAD
+  PROSPECT
+  REPEAT_CUSTOMER
+  BLACKLISTED
+}
+
+enum CustomerTag {
+  HIGH_VALUE
+  FAST_PAYER
+  SLOW_PAYER
+  PRICE_SENSITIVE
+  REQUIRES_FOLLOW_UP
+  FREQUENT_BUYER
+  STUDENT_GROUP
+  CORPORATE
+}
+
+enum FollowUpType {
+  FOLLOW_UP_ON_QUOTATION
+  ASK_FOR_ARTWORK
+  CONFIRM_SIZE_BREAKDOWN
+  REQUEST_DEPOSIT
+  CHASE_BALANCE_PAYMENT
+  OTHER
+}
+
+enum FollowUpStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum SalesOrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PRODUCTION
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum SupplierOrderStatus {
+  DRAFT
+  ORDERED
+  PAID
+  IN_PRODUCTION
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
+
+enum ShipmentStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  DELAYED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  FULL_PAYMENT
+  REFUND
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      UserRole @default(STAFF)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model ProductPriceTier { id String @id @default(cuid()) productId String product Product @relation(fields:[productId], references:[id], onDelete:Cascade) minQuantity Int unitCostRmb Decimal @db.Decimal(12,2) exchangeRate Decimal @db.Decimal(12,4) unitCostSgd Decimal @db.Decimal(12,2) sellingPriceSgd Decimal @db.Decimal(12,2) grossProfitPerUnit Decimal @db.Decimal(12,2) grossMarginPercentage Decimal @db.Decimal(7,2) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([productId]) }
-model ProductSizeVariant { id String @id @default(cuid()) productId String product Product @relation(fields:[productId], references:[id], onDelete:Cascade) size String skuSuffix String? notes String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([productId]) }
-model ProductAttachment { id String @id @default(cuid()) productId String product Product @relation(fields:[productId], references:[id], onDelete:Cascade) fileName String fileUrl String mimeType String sizeBytes Int attachmentType ProductAttachmentType description String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([productId]) }
-model ProductActivity { id String @id @default(cuid()) productId String product Product @relation(fields:[productId], references:[id], onDelete:Cascade) type String description String createdAt DateTime @default(now()) @@index([productId]) }
+model Customer {
+  id                    String         @id @default(cuid())
+  contactName           String
+  companyName           String?
+  email                 String         @unique
+  phone                 String         @unique
+  customerType          CustomerType
+  status                CustomerStatus @default(LEAD)
+  tags                  CustomerTag[]   @default([])
 
-model Quotation { id String @id @default(cuid()) quotationNumber String @unique customerId String customer Customer @relation(fields:[customerId], references:[id]) status QuotationStatus @default(DRAFT) currency Currency exchangeRate Decimal @db.Decimal(10,4) subtotal Decimal @db.Decimal(12,2) shippingCost Decimal @db.Decimal(12,2) totalCost Decimal @db.Decimal(12,2) totalSellingPrice Decimal @db.Decimal(12,2) grossProfit Decimal @db.Decimal(12,2) grossMargin Decimal @db.Decimal(5,2) validUntil DateTime items QuotationItem[] salesOrder SalesOrder? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model QuotationItem { id String @id @default(cuid()) quotationId String quotation Quotation @relation(fields:[quotationId], references:[id], onDelete:Cascade) productId String product Product @relation(fields:[productId], references:[id]) description String quantity Int unitCost Decimal @db.Decimal(12,2) unitSellingPrice Decimal @db.Decimal(12,2) lineCost Decimal @db.Decimal(12,2) lineSellingPrice Decimal @db.Decimal(12,2) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model SalesOrder { id String @id @default(cuid()) salesOrderNumber String @unique quotationId String? @unique quotation Quotation? @relation(fields:[quotationId], references:[id]) customerId String customer Customer @relation(fields:[customerId], references:[id]) status SalesOrderStatus @default(PENDING) orderDate DateTime expectedDeliveryDate DateTime? totalSellingPrice Decimal @db.Decimal(12,2) items SalesOrderItem[] supplierOrders SupplierOrder[] payments Payment[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model SalesOrderItem { id String @id @default(cuid()) salesOrderId String salesOrder SalesOrder @relation(fields:[salesOrderId], references:[id], onDelete:Cascade) productId String product Product @relation(fields:[productId], references:[id]) description String quantity Int unitSellingPrice Decimal @db.Decimal(12,2) lineSellingPrice Decimal @db.Decimal(12,2) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model SupplierOrder { id String @id @default(cuid()) supplierOrderNumber String @unique supplierId String supplier Supplier @relation(fields:[supplierId], references:[id]) salesOrderId String salesOrder SalesOrder @relation(fields:[salesOrderId], references:[id]) status SupplierOrderStatus @default(DRAFT) currency Currency exchangeRate Decimal @db.Decimal(10,4) subtotalForeignCurrency Decimal @db.Decimal(12,2) subtotalSgd Decimal @db.Decimal(12,2) shippingCostSgd Decimal @db.Decimal(12,2) totalCostSgd Decimal @db.Decimal(12,2) items SupplierOrderItem[] shipment Shipment? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model SupplierOrderItem { id String @id @default(cuid()) supplierOrderId String supplierOrder SupplierOrder @relation(fields:[supplierOrderId], references:[id], onDelete:Cascade) productId String product Product @relation(fields:[productId], references:[id]) description String quantity Int unitCostForeignCurrency Decimal @db.Decimal(12,2) lineCostForeignCurrency Decimal @db.Decimal(12,2) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model Shipment { id String @id @default(cuid()) supplierOrderId String @unique supplierOrder SupplierOrder @relation(fields:[supplierOrderId], references:[id], onDelete:Cascade) shippingMethod String trackingNumber String? weightKg Decimal @db.Decimal(8,2) boxCount Int costSgd Decimal @db.Decimal(12,2) status ShipmentStatus @default(PENDING) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model Payment { id String @id @default(cuid()) salesOrderId String salesOrder SalesOrder @relation(fields:[salesOrderId], references:[id], onDelete:Cascade) amount Decimal @db.Decimal(12,2) currency Currency paymentType PaymentType status PaymentStatus @default(UNPAID) dueDate DateTime paidDate DateTime? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
+  deliveryAddressLine1  String
+  deliveryAddressLine2  String?
+  deliveryPostalCode    String
+  deliveryCountry       String         @default("Singapore")
+
+  billingAddressLine1   String?
+  billingAddressLine2   String?
+  billingPostalCode     String?
+  billingCountry        String?
+
+  notes                 String?
+
+  quotations            Quotation[]
+  salesOrders           SalesOrder[]
+  customerNotes         CustomerNote[]
+  attachments           CustomerAttachment[]
+  followUps             CustomerFollowUp[]
+  activities            CustomerActivity[]
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([contactName])
+  @@index([companyName])
+  @@index([phone])
+  @@index([customerType])
+}
+
+model CustomerNote {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+model CustomerAttachment {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  fileName    String
+  fileUrl     String
+  mimeType    String
+  sizeBytes   Int
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+model CustomerFollowUp {
+  id          String         @id @default(cuid())
+  customerId  String
+  customer    Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  type        FollowUpType
+  status      FollowUpStatus @default(OPEN)
+  dueDate     DateTime
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model CustomerActivity {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type        String
+  description String
+  createdAt   DateTime @default(now())
+
+  @@index([customerId])
+}
+
+model Supplier {
+  id             String          @id @default(cuid())
+  name           String
+  contactName    String
+  email          String
+  phone          String
+  country        String
+  currency       Currency
+  address        String
+  notes          String?
+  products       Product[]
+  supplierOrders SupplierOrder[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Product {
+  id                 String              @id @default(cuid())
+  name               String
+  category           String
+  description        String?
+  supplierId         String
+  supplier           Supplier            @relation(fields: [supplierId], references: [id])
+  costCurrency       Currency
+  costPrice          Decimal             @db.Decimal(12, 2)
+  sellingPrice       Decimal             @db.Decimal(12, 2)
+  moq                Int
+  unit               String
+  weightKg           Decimal             @db.Decimal(8, 2)
+  quotationItems     QuotationItem[]
+  salesOrderItems    SalesOrderItem[]
+  supplierOrderItems SupplierOrderItem[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([supplierId])
+}
+
+model Quotation {
+  id                String          @id @default(cuid())
+  quotationNumber   String          @unique
+  customerId        String
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  status            QuotationStatus @default(DRAFT)
+  currency          Currency
+  exchangeRate      Decimal         @db.Decimal(10, 4)
+  subtotal          Decimal         @db.Decimal(12, 2)
+  shippingCost      Decimal         @db.Decimal(12, 2)
+  totalCost         Decimal         @db.Decimal(12, 2)
+  totalSellingPrice Decimal         @db.Decimal(12, 2)
+  grossProfit       Decimal         @db.Decimal(12, 2)
+  grossMargin       Decimal         @db.Decimal(5, 2)
+  validUntil        DateTime
+  items             QuotationItem[]
+  salesOrder        SalesOrder?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model QuotationItem {
+  id               String    @id @default(cuid())
+  quotationId      String
+  quotation        Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product   @relation(fields: [productId], references: [id])
+  description      String
+  quantity         Int
+  unitCost         Decimal   @db.Decimal(12, 2)
+  unitSellingPrice Decimal   @db.Decimal(12, 2)
+  lineCost         Decimal   @db.Decimal(12, 2)
+  lineSellingPrice Decimal   @db.Decimal(12, 2)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([quotationId])
+  @@index([productId])
+}
+
+model SalesOrder {
+  id                   String             @id @default(cuid())
+  salesOrderNumber     String             @unique
+  quotationId          String?            @unique
+  quotation            Quotation?         @relation(fields: [quotationId], references: [id])
+  customerId           String
+  customer             Customer           @relation(fields: [customerId], references: [id])
+  status               SalesOrderStatus   @default(PENDING)
+  orderDate            DateTime
+  expectedDeliveryDate DateTime?
+  totalSellingPrice    Decimal            @db.Decimal(12, 2)
+  items                SalesOrderItem[]
+  supplierOrders       SupplierOrder[]
+  payments             Payment[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model SalesOrderItem {
+  id               String     @id @default(cuid())
+  salesOrderId     String
+  salesOrder       SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product    @relation(fields: [productId], references: [id])
+  description      String
+  quantity         Int
+  unitSellingPrice Decimal    @db.Decimal(12, 2)
+  lineSellingPrice Decimal    @db.Decimal(12, 2)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([salesOrderId])
+  @@index([productId])
+}
+
+model SupplierOrder {
+  id                      String              @id @default(cuid())
+  supplierOrderNumber     String              @unique
+  supplierId              String
+  supplier                Supplier            @relation(fields: [supplierId], references: [id])
+  salesOrderId            String
+  salesOrder              SalesOrder          @relation(fields: [salesOrderId], references: [id])
+  status                  SupplierOrderStatus @default(DRAFT)
+  currency                Currency
+  exchangeRate            Decimal             @db.Decimal(10, 4)
+  subtotalForeignCurrency Decimal             @db.Decimal(12, 2)
+  subtotalSgd             Decimal             @db.Decimal(12, 2)
+  shippingCostSgd         Decimal             @db.Decimal(12, 2)
+  totalCostSgd            Decimal             @db.Decimal(12, 2)
+  items                   SupplierOrderItem[]
+  shipment                Shipment?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  @@index([supplierId])
+  @@index([salesOrderId])
+  @@index([status])
+}
+
+model SupplierOrderItem {
+  id                      String        @id @default(cuid())
+  supplierOrderId         String
+  supplierOrder           SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+  productId               String
+  product                 Product       @relation(fields: [productId], references: [id])
+  description             String
+  quantity                Int
+  unitCostForeignCurrency Decimal       @db.Decimal(12, 2)
+  lineCostForeignCurrency Decimal       @db.Decimal(12, 2)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  @@index([supplierOrderId])
+  @@index([productId])
+}
+
+model Shipment {
+  id              String         @id @default(cuid())
+  supplierOrderId String         @unique
+  supplierOrder   SupplierOrder  @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+  shippingMethod  String
+  trackingNumber  String?
+  weightKg        Decimal        @db.Decimal(8, 2)
+  boxCount        Int
+  costSgd         Decimal        @db.Decimal(12, 2)
+  status          ShipmentStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  salesOrderId String
+  salesOrder   SalesOrder    @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  amount       Decimal       @db.Decimal(12, 2)
+  currency     Currency
+  paymentType  PaymentType
+  status       PaymentStatus @default(UNPAID)
+  dueDate      DateTime
+  paidDate     DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([salesOrderId])
+  @@index([status])
+}
