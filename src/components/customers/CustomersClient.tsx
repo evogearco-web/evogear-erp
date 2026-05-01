@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { CUSTOMER_STATUSES, CUSTOMER_TAGS, CUSTOMER_TYPES } from './constants';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { formatDate } from '@/lib/format';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -101,7 +102,7 @@ export function CustomersClient({ customers }: { customers: any[] }) {
 
       <div className="overflow-x-auto rounded-lg border bg-white">
         <table className="w-full min-w-[1200px] text-sm"><thead className="bg-slate-50"><tr>{['Contact', 'Organisation', 'Email', 'Phone', 'Type', 'Status', 'Last order', 'Total revenue', 'Outstanding', 'Created', 'Actions'].map((h) => <th key={h} className="px-3 py-2 text-left">{h}</th>)}</tr></thead>
-          <tbody>{customers.map((c) => <tr key={c.id} className="border-t"><td className="px-3 py-2"><Link href={`/customers/${c.id}`} className="font-medium hover:underline">{c.contactName}</Link></td><td className="px-3 py-2">{c.companyName || '-'}</td><td className="px-3 py-2">{c.email}</td><td className="px-3 py-2">{c.phone}</td><td className="px-3 py-2">{c.customerType}</td><td className="px-3 py-2"><StatusBadge status={c.status.replace('_', ' ')} /></td><td className="px-3 py-2">-</td><td className="px-3 py-2">SGD 0.00</td><td className="px-3 py-2">SGD 0.00</td><td className="px-3 py-2">{new Date(c.createdAt).toLocaleDateString()}</td><td className="px-3 py-2 space-x-2"><button onClick={() => { setEditing(c); setForm({ ...c, billingSame: false }); setFieldErrors({}); setTouched({}); setBannerMessage(''); setOpen(true); }}>Edit</button><button onClick={() => setBannerMessage('Create quotation will be built in a later module.')}>Create quotation</button><button onClick={() => setBannerMessage('Create customer order will be built in a later module.')}>Create customer order</button><button onClick={() => setBannerMessage('Create invoice will be built in a later module.')}>Create invoice</button></td></tr>)}</tbody>
+          <tbody>{customers.map((c) => <tr key={c.id} className="border-t"><td className="px-3 py-2"><Link href={`/customers/${c.id}`} className="font-medium hover:underline">{c.contactName}</Link></td><td className="px-3 py-2">{c.companyName || '-'}</td><td className="px-3 py-2">{c.email}</td><td className="px-3 py-2">{c.phone}</td><td className="px-3 py-2">{c.customerType}</td><td className="px-3 py-2"><StatusBadge status={c.status.replace('_', ' ')} /></td><td className="px-3 py-2">-</td><td className="px-3 py-2">SGD 0.00</td><td className="px-3 py-2">SGD 0.00</td><td className="px-3 py-2">{formatDate(c.createdAt)}</td><td className="px-3 py-2 space-x-2"><button onClick={() => { setEditing(c); setForm({ ...c, billingSame: false }); setFieldErrors({}); setTouched({}); setBannerMessage(''); setOpen(true); }}>Edit</button><button onClick={() => setBannerMessage('Create quotation will be built in a later module.')}>Create quotation</button><button onClick={() => setBannerMessage('Create customer order will be built in a later module.')}>Create customer order</button><button onClick={() => setBannerMessage('Create invoice will be built in a later module.')}>Create invoice</button></td></tr>)}</tbody>
         </table>
       </div>
 
