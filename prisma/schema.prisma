@@ -1,19 +1,97 @@
 generator client { provider = "prisma-client-js" }
 datasource db { provider = "postgresql" url = env("DATABASE_URL") }
 
-enum UserRole { ADMIN MANAGER STAFF VIEWER }
-enum QuotationStatus { DRAFT SENT ACCEPTED REJECTED EXPIRED }
-enum SalesOrderStatus { PENDING CONFIRMED IN_PRODUCTION SHIPPED COMPLETED CANCELLED }
-enum SupplierOrderStatus { DRAFT ORDERED PAID IN_PRODUCTION SHIPPED RECEIVED CANCELLED }
-enum ShipmentStatus { PENDING IN_TRANSIT DELIVERED DELAYED }
-enum PaymentStatus { UNPAID PARTIALLY_PAID PAID OVERDUE }
-enum PaymentType { DEPOSIT BALANCE FULL_PAYMENT REFUND }
-enum Currency { SGD RMB USD }
-enum CustomerType { SCHOOL B2C_CUSTOMER CORPORATE STUDENT_GROUP OTHER }
-enum CustomerStatus { ACTIVE INACTIVE LEAD PROSPECT REPEAT_CUSTOMER BLACKLISTED }
-enum CustomerTag { HIGH_VALUE FAST_PAYER SLOW_PAYER PRICE_SENSITIVE REQUIRES_FOLLOW_UP FREQUENT_BUYER STUDENT_GROUP CORPORATE }
-enum FollowUpType { FOLLOW_UP_ON_QUOTATION ASK_FOR_ARTWORK CONFIRM_SIZE_BREAKDOWN REQUEST_DEPOSIT CHASE_BALANCE_PAYMENT OTHER }
-enum FollowUpStatus { OPEN DONE CANCELLED }
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+  VIEWER
+}
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+enum SalesOrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PRODUCTION
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+enum SupplierOrderStatus {
+  DRAFT
+  ORDERED
+  PAID
+  IN_PRODUCTION
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
+enum ShipmentStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  DELAYED
+}
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  FULL_PAYMENT
+  REFUND
+}
+enum Currency {
+  SGD
+  RMB
+  USD
+}
+enum CustomerType {
+  SCHOOL
+  B2C_CUSTOMER
+  CORPORATE
+  STUDENT_GROUP
+  OTHER
+}
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  LEAD
+  PROSPECT
+  REPEAT_CUSTOMER
+  BLACKLISTED
+}
+enum CustomerTag {
+  HIGH_VALUE
+  FAST_PAYER
+  SLOW_PAYER
+  PRICE_SENSITIVE
+  REQUIRES_FOLLOW_UP
+  FREQUENT_BUYER
+  STUDENT_GROUP
+  CORPORATE
+}
+enum FollowUpType {
+  FOLLOW_UP_ON_QUOTATION
+  ASK_FOR_ARTWORK
+  CONFIRM_SIZE_BREAKDOWN
+  REQUEST_DEPOSIT
+  CHASE_BALANCE_PAYMENT
+  OTHER
+}
+enum FollowUpStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
 
 model User { id String @id @default(cuid()) name String email String @unique role UserRole @default(STAFF) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
 model Customer {
