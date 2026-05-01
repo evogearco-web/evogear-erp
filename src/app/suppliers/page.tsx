@@ -1,0 +1,7 @@
+import { ModulePage } from '@/components/ui/ModulePage';
+import { moduleCopy } from '@/lib/module-content';
+
+export default function SuppliersPage() {
+  const title = 'Suppliers';
+  return <ModulePage title={title} description={moduleCopy[title]} />;
+}
